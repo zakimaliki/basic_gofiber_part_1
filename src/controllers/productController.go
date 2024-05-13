@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"gofiber/src/helpers"
 	"gofiber/src/models"
 	"strconv"
 
@@ -32,6 +33,11 @@ func CreateProduct(c *fiber.Ctx) error {
 		})
 		return err
 	}
+
+	errors := helpers.ValidateStruct(newProduct)
+	if len(errors) > 0 {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(errors)
+	}
 	models.PostProduct(&newProduct)
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Product created successfully",
@@ -48,6 +54,12 @@ func UpdateProduct(c *fiber.Ctx) error {
 		})
 		return err
 	}
+
+	errors := helpers.ValidateStruct(updatedProduct)
+	if len(errors) > 0 {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(errors)
+	}
+
 	err := models.UpdateProduct(id, &updatedProduct)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

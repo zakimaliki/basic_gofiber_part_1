@@ -8,11 +8,11 @@ import (
 
 type Product struct {
 	gorm.Model
-	Name       string   `json:"name"`
-	Price      float64  `json:"price"`
-	Stock      int      `json:"stock"`
-	CategoryID uint     `json:"category_id"`
-	Category   Category `gorm:"foreignKey:CategoryID"`
+	Name       string  `json:"name" validate:"required,min=3,max=100"`
+	Price      float64 `json:"price" validate:"required,min=0"`
+	Stock      int     `json:"stock" validate:"required,min=0"`
+	CategoryID uint    `json:"category_id"`
+	Category   Category
 }
 
 func SelectAllProducts() []*Product {
