@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mitchellh/mapstructure"
 )
 
 func GetAllCategories(c *fiber.Ctx) error {
@@ -20,19 +21,25 @@ func GetCategoryById(c *fiber.Ctx) error {
 }
 
 func CreateCategory(c *fiber.Ctx) error {
-	var category models.Category
+	var category map[string]interface{}
 	if err := c.BodyParser(&category); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Failed to parse request body",
 		})
 	}
 
-	errors := helpers.ValidateStruct(category)
+	category = helpers.XSSMiddleware(category)
+
+	// Convert map to Category model using mapstructure
+	var newCategory models.Category
+	mapstructure.Decode(category, &newCategory)
+
+	errors := helpers.ValidateStruct(newCategory)
 	if len(errors) > 0 {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(errors)
 	}
 
-	models.PostCategory(&category)
+	models.PostCategory(&newCategory)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Category created successfully",
@@ -42,7 +49,7 @@ func CreateCategory(c *fiber.Ctx) error {
 func UpdateCategory(c *fiber.Ctx) error {
 	id, _ := strconv.Atoi(c.Params("id"))
 
-	var updatedCategory models.Category
+	var updatedCategory map[string]interface{}
 	if err := c.BodyParser(&updatedCategory); err != nil {
 		c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid request body",
@@ -50,13 +57,19 @@ func UpdateCategory(c *fiber.Ctx) error {
 		return err
 	}
 
+	updatedCategory = helpers.XSSMiddleware(updatedCategory)
+
+	// Convert map to Category model using mapstructure
+	var newUpdatedCategory models.Category
+	mapstructure.Decode(updatedCategory, &newUpdatedCategory)
+
 	errors := helpers.ValidateStruct(updatedCategory)
 
 	if len(errors) > 0 {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(errors)
 	}
 
-	models.UpdateCategory(id, &updatedCategory)
+	models.UpdateCategory(id, &newUpdatedCategory)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Category updated successfully",

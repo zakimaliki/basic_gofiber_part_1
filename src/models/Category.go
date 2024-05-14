@@ -9,7 +9,7 @@ import (
 type Category struct {
 	gorm.Model
 	Name     string    `json:"name" validate:"required,min=3,max=50"`
-	URLImage string    `json:"url_image"`
+	Image    string    `json:"image"`
 	Products []Product `json:"products"`
 }
 
