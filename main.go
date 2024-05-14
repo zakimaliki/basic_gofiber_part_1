@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/helmet/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -19,6 +20,9 @@ func main() {
 	}
 
 	app := fiber.New()
+
+	// Middleware Helmet
+	app.Use(helmet.New())
 
 	// Middleware CORS
 	app.Use(cors.New(cors.Config{
