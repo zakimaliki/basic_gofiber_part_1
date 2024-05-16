@@ -15,10 +15,10 @@ type Product struct {
 	Category   Category `gorm:"foreignKey:CategoryID"`
 }
 
-func SelectAllProducts(sort, name string) []*Product {
+func SelectAllProducts(sort, name string, limit, offset int) []*Product {
 	var items []*Product
 	name = "%" + name + "%"
-	configs.DB.Preload("Category").Order(sort).Where("name LIKE ?", name).Find(&items)
+	configs.DB.Preload("Category").Order(sort).Limit(limit).Offset(offset).Where("name LIKE ?", name).Find(&items)
 	return items
 }
 
@@ -43,4 +43,10 @@ func DeleteProduct(id int) error {
 	var item Product
 	result := configs.DB.Delete(&item, "id = ?", id)
 	return result.Error
+}
+
+func CountData() int64 {
+	var result int64
+	configs.DB.Table("products").Count(&result)
+	return result
 }

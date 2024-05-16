@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gofiber/src/helpers"
 	"gofiber/src/models"
+	"math"
 	"strconv"
 	"strings"
 
@@ -12,6 +13,17 @@ import (
 )
 
 func GetAllProducts(c *fiber.Ctx) error {
+	pageOld := c.Query("page")
+	limitOld := c.Query("limit")
+	page, _ := strconv.Atoi(pageOld)
+	if page == 0 {
+		page = 1
+	}
+	limit, _ := strconv.Atoi(limitOld)
+	if limit == 0 {
+		limit = 5
+	}
+	offset := (page - 1) * limit
 	sort := c.Query("sorting")
 	if sort == "" {
 		sort = "ASC"
@@ -22,8 +34,17 @@ func GetAllProducts(c *fiber.Ctx) error {
 	}
 	sort = sortby + " " + strings.ToLower(sort)
 	keyword := c.Query("search")
-	products := models.SelectAllProducts(sort, keyword)
-	return c.JSON(products)
+	products := models.SelectAllProducts(sort, keyword, limit, offset)
+	totalData := models.CountData()
+	totalPage := math.Ceil(float64(totalData) / float64(limit))
+	result := map[string]interface{}{
+		"data":        products,
+		"currentPage": page,
+		"limit":       limit,
+		"totalData":   totalData,
+		"totalPage":   totalPage,
+	}
+	return c.JSON(result)
 }
 
 func GetProductById(c *fiber.Ctx) error {
