@@ -15,10 +15,10 @@ type Product struct {
 	Category   Category `gorm:"foreignKey:CategoryID"`
 }
 
-func SelectAllProducts(name string) []*Product {
+func SelectAllProducts(sort, name string) []*Product {
 	var items []*Product
 	name = "%" + name + "%"
-	configs.DB.Preload("Category").Where("name LIKE ?", name).Find(&items)
+	configs.DB.Preload("Category").Order(sort).Where("name LIKE ?", name).Find(&items)
 	return items
 }
 

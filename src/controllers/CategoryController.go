@@ -4,14 +4,24 @@ import (
 	"gofiber/src/helpers"
 	"gofiber/src/models"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mitchellh/mapstructure"
 )
 
 func GetAllCategories(c *fiber.Ctx) error {
+	sort := c.Query("sorting")
+	if sort == "" {
+		sort = "ASC"
+	}
+	sortby := c.Query("orderBy")
+	if sortby == "" {
+		sortby = "name"
+	}
+	sort = sortby + " " + strings.ToLower(sort)
 	keyword := c.Query("search")
-	categories := models.SelectAllCategories(keyword)
+	categories := models.SelectAllCategories(sort, keyword)
 	return c.JSON(categories)
 }
 

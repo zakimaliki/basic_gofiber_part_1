@@ -5,14 +5,24 @@ import (
 	"gofiber/src/helpers"
 	"gofiber/src/models"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mitchellh/mapstructure"
 )
 
 func GetAllProducts(c *fiber.Ctx) error {
+	sort := c.Query("sorting")
+	if sort == "" {
+		sort = "ASC"
+	}
+	sortby := c.Query("orderBy")
+	if sortby == "" {
+		sortby = "name"
+	}
+	sort = sortby + " " + strings.ToLower(sort)
 	keyword := c.Query("search")
-	products := models.SelectAllProducts(keyword)
+	products := models.SelectAllProducts(sort, keyword)
 	return c.JSON(products)
 }
 

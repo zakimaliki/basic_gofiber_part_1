@@ -20,13 +20,13 @@ type ApiProduct struct {
 	CategoryID uint    `json:"category_id"`
 }
 
-func SelectAllCategories(name string) []*Category {
+func SelectAllCategories(sort, name string) []*Category {
 	var categories []*Category
 	name = "%" + name + "%"
 	configs.DB.Preload("Products", func(db *gorm.DB) *gorm.DB {
 		var items []*ApiProduct
 		return db.Model(&Product{}).Find(&items)
-	}).Where("name LIKE ?", name).Find(&categories)
+	}).Order(sort).Where("name LIKE ?", name).Find(&categories)
 	return categories
 }
 
