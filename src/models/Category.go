@@ -8,20 +8,35 @@ import (
 
 type Category struct {
 	gorm.Model
-	Name     string    `json:"name" validate:"required,min=3,max=50"`
-	Image    string    `json:"image"`
-	Products []Product `json:"products"`
+	Name     string       `json:"name" validate:"required,min=3,max=50"`
+	Image    string       `json:"image"`
+	Products []ApiProduct `json:"products"`
 }
 
-func SelectAllCategories() []*Category {
+type ApiProduct struct {
+	Name       string  `json:"name" `
+	Price      float64 `json:"price" `
+	Stock      int     `json:"stock" `
+	CategoryID uint    `json:"category_id"`
+}
+
+func SelectAllCategories(name string) []*Category {
 	var categories []*Category
-	configs.DB.Preload("Products").Find(&categories)
+	name = "%" + name + "%"
+	configs.DB.Preload("Products", func(db *gorm.DB) *gorm.DB {
+		var items []*ApiProduct
+		return db.Model(&Product{}).Find(&items)
+	}).Where("name LIKE ?", name).Find(&categories)
 	return categories
 }
 
 func SelectCategoryById(id int) *Category {
 	var category Category
-	configs.DB.Preload("Products").First(&category, "id = ?", id)
+	configs.DB.Preload("Products",
+		func(db *gorm.DB) *gorm.DB {
+			var items []*ApiProduct
+			return db.Model(&Product{}).Find(&items)
+		}).First(&category, "id = ?", id)
 	return &category
 }
 

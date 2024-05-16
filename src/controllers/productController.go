@@ -11,7 +11,8 @@ import (
 )
 
 func GetAllProducts(c *fiber.Ctx) error {
-	products := models.SelectAllProducts()
+	keyword := c.Query("search")
+	products := models.SelectAllProducts(keyword)
 	return c.JSON(products)
 }
 

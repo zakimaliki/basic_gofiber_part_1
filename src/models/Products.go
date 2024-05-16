@@ -8,16 +8,17 @@ import (
 
 type Product struct {
 	gorm.Model
-	Name       string  `json:"name" validate:"required,min=3,max=100"`
-	Price      float64 `json:"price" validate:"required,min=0"`
-	Stock      int     `json:"stock" validate:"required,min=0"`
-	CategoryID uint    `json:"category_id"`
-	Category   Category
+	Name       string   `json:"name" validate:"required,min=3,max=100"`
+	Price      float64  `json:"price" validate:"required,min=0"`
+	Stock      int      `json:"stock" validate:"required,min=0"`
+	CategoryID uint     `json:"category_id"`
+	Category   Category `gorm:"foreignKey:CategoryID"`
 }
 
-func SelectAllProducts() []*Product {
+func SelectAllProducts(name string) []*Product {
 	var items []*Product
-	configs.DB.Preload("Category").Find(&items)
+	name = "%" + name + "%"
+	configs.DB.Preload("Category").Where("name LIKE ?", name).Find(&items)
 	return items
 }
 

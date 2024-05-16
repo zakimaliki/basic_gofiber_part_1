@@ -10,7 +10,8 @@ import (
 )
 
 func GetAllCategories(c *fiber.Ctx) error {
-	categories := models.SelectAllCategories()
+	keyword := c.Query("search")
+	categories := models.SelectAllCategories(keyword)
 	return c.JSON(categories)
 }
 
