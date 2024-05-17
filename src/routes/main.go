@@ -2,6 +2,7 @@ package routes
 
 import (
 	"gofiber/src/controllers"
+	"gofiber/src/middlewares"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,8 +16,8 @@ func Router(app *fiber.App) {
 	app.Delete("/product/:id", controllers.DeleteProduct)
 
 	// Category routes
-	app.Get("/categories", controllers.GetAllCategories)
-	// app.Get("/categories", middlewares.JwtMiddleware(), controllers.GetAllCategories)
+	// app.Get("/categories", controllers.GetAllCategories)
+	app.Get("/categories", middlewares.JwtMiddleware(), controllers.GetAllCategories)
 
 	app.Get("/category/:id", controllers.GetCategoryById)
 	app.Post("/category", controllers.CreateCategory)
@@ -26,4 +27,6 @@ func Router(app *fiber.App) {
 	// User Routes
 	app.Post("/register", controllers.RegisterUser)
 	app.Post("/login", controllers.LoginUser)
+	app.Post("/refreshToken", controllers.RefreshToken)
+
 }

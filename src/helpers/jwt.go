@@ -6,25 +6,40 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func GenerateToken(secretKey, email string) (string, error) {
-	// Membuat token baru dengan metode penandatanganan HS256
+// GenerateToken generates a JWT token with dynamic claims
+func GenerateToken(secretKey string, payload map[string]interface{}) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
-
-	// Mendapatkan klaim dari token sebagai MapClaims
 	claims := token.Claims.(jwt.MapClaims)
 
-	// Menambahkan klaim email ke token
-	claims["email"] = email
+	for key, value := range payload {
+		claims[key] = value
+	}
 
-	// Menambahkan waktu kedaluwarsa 1 jam
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 
-	// Menandatangani token dengan kunci rahasia
 	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
 
-	// Mengembalikan token yang sudah ditandatangani
 	return tokenString, nil
+}
+
+// GenerateRefreshToken generates a refresh JWT token with dynamic claims
+func GenerateRefreshToken(secretKey string, payload map[string]interface{}) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+
+	for key, value := range payload {
+		claims[key] = value
+	}
+
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	refreshTokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+
+	return refreshTokenString, nil
 }
