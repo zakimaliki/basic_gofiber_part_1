@@ -14,6 +14,7 @@ func Router(app *fiber.App) {
 	app.Post("/product", controllers.CreateProduct)
 	app.Put("/product/:id", controllers.UpdateProduct)
 	app.Delete("/product/:id", controllers.DeleteProduct)
+	app.Post("/upload", controllers.UploadFile)
 
 	// Category routes
 	// app.Get("/categories", controllers.GetAllCategories)

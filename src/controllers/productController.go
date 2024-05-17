@@ -126,3 +126,43 @@ func DeleteProduct(c *fiber.Ctx) error {
 		"message": fmt.Sprintf("Product with ID %d deleted successfully", id),
 	})
 }
+
+func UploadFile(c *fiber.Ctx) error {
+	// Ambil file dari form
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Gagal mengunggah file: " + err.Error())
+	}
+
+	// Validasi ukuran file (maksimal 2MB)
+	maxFileSize := int64(2 << 20) // 2MB
+	if err := helpers.SizeUploadValidation(file.Size, maxFileSize); err != nil {
+		return err
+	}
+
+	// Baca sebagian dari file untuk validasi tipe
+	fileHeader, err := file.Open()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Gagal membuka file: " + err.Error())
+	}
+	defer fileHeader.Close()
+
+	buffer := make([]byte, 512)
+	if _, err := fileHeader.Read(buffer); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Gagal membaca file: " + err.Error())
+	}
+
+	// Validasi tipe file
+	validFileTypes := []string{"image/png", "image/jpeg", "image/jpg", "application/pdf"}
+	if err := helpers.TypeUploadValidation(buffer, validFileTypes); err != nil {
+		return err
+	}
+
+	// Simpan file di direktori lokal
+	filePath := helpers.UploadFile(file)
+	if err := c.SaveFile(file, filePath); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Gagal menyimpan file: " + err.Error())
+	}
+
+	return c.SendString(fmt.Sprintf("File %s berhasil diunggah ke %s", file.Filename, filePath))
+}
