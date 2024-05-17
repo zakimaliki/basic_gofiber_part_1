@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gofiber/src/helpers"
 	"gofiber/src/models"
+	"gofiber/src/services"
 	"math"
 	"strconv"
 	"strings"
@@ -165,4 +166,41 @@ func UploadFile(c *fiber.Ctx) error {
 	}
 
 	return c.SendString(fmt.Sprintf("File %s berhasil diunggah ke %s", file.Filename, filePath))
+}
+func UploadFileServer(c *fiber.Ctx) error {
+	// Ambil file dari form
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Gagal mengunggah file: " + err.Error())
+	}
+
+	// Validasi ukuran file (maksimal 2MB)
+	maxFileSize := int64(2 << 20) // 2MB
+	if err := helpers.SizeUploadValidation(file.Size, maxFileSize); err != nil {
+		return err
+	}
+
+	// Baca sebagian dari file untuk validasi tipe
+	fileHeader, err := file.Open()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Gagal membuka file: " + err.Error())
+	}
+	defer fileHeader.Close()
+
+	buffer := make([]byte, 512)
+	if _, err := fileHeader.Read(buffer); err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Gagal membaca file: " + err.Error())
+	}
+
+	// Validasi tipe file
+	validFileTypes := []string{"image/png", "image/jpeg", "image/jpg", "application/pdf"}
+	if err := helpers.TypeUploadValidation(buffer, validFileTypes); err != nil {
+		return err
+	}
+
+	uploadResult, err := services.UploadCloudinary(c, file)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
+	return c.JSON(uploadResult)
 }
