@@ -138,10 +138,6 @@ func VerifyAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	// 	"data": userID,
-	// })
-
 	if err := models.UpdateUserVerify(int(userID)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update account verification",
@@ -174,7 +170,6 @@ func LoginUser(c *fiber.Ctx) error {
 		})
 	}
 
-	// checkUser := models.CekUser(&user)
 	if validateEmail[0].Verify == "false" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "User is unverify",
