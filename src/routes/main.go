@@ -30,5 +30,6 @@ func Router(app *fiber.App) {
 	app.Post("/register", controllers.RegisterUser)
 	app.Post("/login", controllers.LoginUser)
 	app.Post("/refreshToken", controllers.RefreshToken)
+	app.Get("/verify", controllers.VerifyAccount)
 
 }
